@@ -1,0 +1,62 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+	<cache:annotation-driven cache-manager="memcacheManager" />
+
+	<bean id="memcacheManager" class="com.google.code.ssm.spring.SSMCacheManager">
+		<property name="caches">
+			<set>
+				<bean class="com.google.code.ssm.spring.SSMCache">
+					<constructor-arg name="cache" index="0" ref="userCache" />
+					<constructor-arg name="expiration" index="1" value="20" />
+					<constructor-arg name="allowClear" index="2" value="false" />
+				</bean>
+				<!-- <bean class="com.google.code.ssm.spring.SSMCache"> 
+					<constructor-arg name="cache" index="0" ref="employeeCache" /> 
+					<constructor-arg name="expiration" index="1" value="15" /> 
+					<constructor-arg name="allowClear" index="2" value="false"/> 
+				 </bean> -->
+			</set>
+		</property>
+	</bean>
+
+	<bean name="userCache" class="com.google.code.ssm.CacheFactory">
+		<property name="cacheName" value="userCache" />
+		<property name="cacheClientFactory">
+			<bean name="cacheClientFactory" class="com.google.code.ssm.providers.xmemcached.MemcacheClientFactoryImpl" />
+		</property>
+		<property name="addressProvider">
+			<bean class="com.google.code.ssm.config.DefaultAddressProvider">
+				<property name="address" value="127.0.0.1:11211" />
+			</bean>
+		</property>
+		<property name="configuration">
+			<bean class="com.google.code.ssm.providers.CacheConfiguration">
+				<property name="consistentHashing" value="true" />
+			</bean>
+		</property>
+	</bean>
+
+	<mvc:annotation-driven
+		content-negotiation-manager="contentNegotiationManager">
+		<mvc:path-matching registered-suffixes-only="true" />
+	</mvc:annotation-driven>
+
+	<context:component-scan base-package="com.rest.learning" />
+
+	<bean id="contentNegotiationManager"
+		class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+		<property name="favorPathExtension" value="false" />
+	</bean>
+
+	<bean id="helloWorld" class="com.rest.learning.model.HelloWorld">
+		<property name="message" value="Hello World!" />
+	</bean>
+
+</beans>
